@@ -12,6 +12,8 @@ const HomePage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  const [searchQuery, setSearchQuery] = React.useState('');
+
   const [products, setProducts] = React.useState([]);
   const [categories, setCategories] = React.useState(['قطعة', 'دش', 'ريسيفر', 'ريموت', 'صواميل', 'سلك', 'حامل شاشة', 'حامل قطعة', 'حجار', 'وصلة 2×1', 'وصلة 3×1', 'أدبتور', 'وصلة HD', 'دايزك', 'أخرى']);
   const [selectedCategory, setSelectedCategory] = React.useState('الكل');
@@ -104,14 +106,23 @@ const HomePage = () => {
             </p>
 
             {/* Search bar */}
-            <div className="relative mb-8">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }} className="relative mb-8">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث عن ريسيفر، طبق دش، سلك، قطعة LNB..."
                 className="w-full pr-6 pl-12 py-4 border border-slate-200 rounded-2xl bg-white shadow-soft focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-['Cairo'] text-right"
               />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-            </div>
+              <button type="submit" className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <Search className="text-slate-400 hover:text-indigo-600 transition-colors w-5 h-5" />
+              </button>
+            </form>
 
             {/* Features */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

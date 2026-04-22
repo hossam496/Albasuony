@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Star, ChevronDown, Loader } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { productAPI } from '../services/api';
 import Swal from 'sweetalert2';
 
 const Products = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('الكل');
   const [sortBy, setSortBy] = useState('default');
   const [products, setProducts] = useState([]);
@@ -118,7 +119,15 @@ const Products = () => {
                 type="text"
                 placeholder="ابحث عن منتج..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (e.target.value.trim()) {
+                    setSearchParams({ search: e.target.value.trim() });
+                  } else {
+                    searchParams.delete('search');
+                    setSearchParams(searchParams);
+                  }
+                }}
                 className="w-full pr-10 pl-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-['Cairo']"
               />
             </div>
