@@ -142,4 +142,11 @@ export const brandAPI = {
     getStats: () => api.get('/brands/stats'),
 };
 
+// ─── Notifications ───────────────────────────────────────────────────────────
+export const notificationAPI = {
+    getMyNotifications: () => api.get('/notifications'),
+    markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+    markAllAsRead: () => api.patch('/notifications/read-all'),
+};
+
 export default api;

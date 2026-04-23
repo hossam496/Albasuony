@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { notificationAPI } from '../../services/api';
 import {
   LayoutDashboard,
   Package,
@@ -14,14 +15,72 @@ import {
   X,
   ChevronRight,
   LogOut,
-  Globe
+  Globe,
+  CheckCircle2
 } from 'lucide-react';
 
 const AdminLayout = () => {
   const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const notificationRef = useRef(null);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await notificationAPI.getMyNotifications();
+      if (res.data?.success) {
+        setNotifications(res.data.notifications);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications', error);
+    }
+  };
+
+  const handleNotificationClick = async (notif) => {
+    if (!notif.isRead) {
+      try {
+        await notificationAPI.markAsRead(notif._id);
+        setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
+      } catch (error) {
+        console.error('Failed to mark notification as read', error);
+      }
+    }
+    if (notif.link) {
+      navigate(notif.link);
+      setShowNotifications(false);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationAPI.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('Failed to mark all as read', error);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const navItems = [
     { name: 'لوحة التحكم', path: '/admin', icon: LayoutDashboard },
@@ -207,10 +266,69 @@ const AdminLayout = () => {
             </div>
 
             {/* Notifications */}
-            <button className="relative p-2 hover:bg-slate-100 rounded-xl transition-colors">
-              <Bell className="w-5 h-5 text-slate-600" />
-              <span className="absolute top-1 left-1 w-2 h-2 bg-rose-500 rounded-full"></span>
-            </button>
+            <div className="relative" ref={notificationRef}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <Bell className="w-5 h-5 text-slate-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 left-0 w-4 h-4 bg-rose-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {showNotifications && (
+                <div className="absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
+                  <div className="flex items-center justify-between px-4 pb-2 border-b border-slate-50">
+                    <h3 className="font-semibold text-slate-800 text-sm">الإشعارات</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-xs text-[#4338ca] hover:underline"
+                      >
+                        تحديد الكل كمقروء
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-slate-500">لا توجد إشعارات</div>
+                    ) : (
+                      <div className="flex flex-col">
+                        {notifications.map(notif => (
+                          <div
+                            key={notif._id}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`p-3 border-b border-slate-50 last:border-0 cursor-pointer transition-colors hover:bg-slate-50 flex items-start gap-3 ${!notif.isRead ? 'bg-indigo-50/30' : ''}`}
+                          >
+                            <div className="mt-1">
+                              {notif.isRead ? (
+                                <Bell className="w-4 h-4 text-slate-400" />
+                              ) : (
+                                <span className="flex w-4 h-4 relative">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500"></span>
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`text-sm ${!notif.isRead ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>{notif.title}</p>
+                              <p className="text-xs text-slate-500 mt-1">{notif.message}</p>
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                {new Date(notif.createdAt).toLocaleDateString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Profile */}
             <div className="flex items-center gap-3 pr-4 border-r border-slate-200">
