@@ -19,7 +19,7 @@ const Inventory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdjusting, setIsAdjusting] = useState(false);
 
-  const categories = ['قطعة', 'دش', 'ريسيفر', 'ريموت', 'صواميل', 'سلك', 'حامل شاشة', 'حامل قطعة', 'حجار', 'وصلة 2×1', 'وصلة 3×1', 'أدبتور', 'وصلة HD', 'دايزك', 'أخرى'];
+  const categories = ['قطعة', 'دش', 'ريسيفر', 'ريموت', 'صواميل', 'سلك', 'حامل شاشة', 'حامل قطعة', 'حجار', 'عدسة', 'وصلة 2×1', 'وصلة 3×1', 'وصلة 3×3', 'أدبتور', 'وصلة HD', 'دايزك', 'أخرى'];
 
   const fetchData = async () => {
     setIsLoading(true);

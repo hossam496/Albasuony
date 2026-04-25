@@ -6,7 +6,7 @@ import {
 import { productAPI } from '../../services/api';
 import Swal from 'sweetalert2';
 
-const CATEGORIES = ['قطعة', 'دش', 'ريسيفر', 'ريموت', 'صواميل', 'سلك', 'حامل شاشة', 'حامل قطعة', 'حجار', 'وصلة 2×1', 'وصلة 3×1', 'أدبتور', 'وصلة HD', 'دايزك', 'أخرى'];
+const CATEGORIES = ['قطعة', 'دش', 'ريسيفر', 'ريموت', 'صواميل', 'سلك', 'حامل شاشة', 'حامل قطعة', 'حجار', 'عدسة', 'وصلة 2×1', 'وصلة 3×1', 'وصلة 3×3', 'أدبتور', 'وصلة HD', 'دايزك', 'أخرى'];
 
 const emptyProduct = {
   name: '', description: '', price: '', comparePrice: '', sku: '',
