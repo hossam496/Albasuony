@@ -146,7 +146,13 @@ const Inventory = () => {
 
   const exportToCSV = () => {
     const headers = ['Product', 'SKU', 'Category', 'Stock', 'Min Stock', 'Price'];
-    const data = inventory.map(item => [
+    const sortedInventory = [...inventory].sort((a, b) => {
+      if (a.category !== b.category) {
+        return a.category.localeCompare(b.category, 'ar');
+      }
+      return a.name.localeCompare(b.name, 'ar');
+    });
+    const data = sortedInventory.map(item => [
       item.name,
       item.sku || 'N/A',
       item.category,
