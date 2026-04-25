@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { inventoryAPI, productAPI } from '../../services/api';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 const Inventory = () => {
   const [view, setView] = useState('overview'); // 'overview' | 'logs'
@@ -144,34 +145,29 @@ const Inventory = () => {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ['Product', 'SKU', 'Category', 'Stock', 'Min Stock', 'Price'];
+  const exportToExcel = () => {
     const sortedInventory = [...inventory].sort((a, b) => {
       if (a.category !== b.category) {
         return a.category.localeCompare(b.category, 'ar');
       }
       return a.name.localeCompare(b.name, 'ar');
     });
-    const data = sortedInventory.map(item => [
-      item.name,
-      item.sku || 'N/A',
-      item.category,
-      item.stock,
-      item.minStock || 5,
-      item.price
-    ]);
+    const data = sortedInventory.map(item => ({
+      'المنتج (Product)': item.name,
+      'الكود (SKU)': item.sku || 'N/A',
+      'التصنيف (Category)': item.category,
+      'الرصيد (Stock)': item.stock,
+      'الحد الأدنى (Min Stock)': item.minStock || 5,
+      'السعر (Price)': item.price
+    }));
 
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"
-      + headers.join(",") + "\n"
-      + data.map(e => e.join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `inventory_${new Date().toLocaleDateString()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    if(!worksheet['!views']) worksheet['!views'] = [];
+    worksheet['!views'].push({ rightToLeft: true });
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "المخزون");
+    XLSX.writeFile(workbook, `inventory_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`);
   };
 
   const getStockStatus = (item) => {
@@ -217,7 +213,7 @@ const Inventory = () => {
             طباعة
           </button>
           <button
-            onClick={exportToCSV}
+            onClick={exportToExcel}
             className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-soft shadow-emerald-600/20"
           >
             <FileSpreadsheet className="w-4 h-4" />
