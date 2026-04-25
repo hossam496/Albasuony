@@ -174,12 +174,12 @@ const HomePage = () => {
       {/* All Items Section */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold mb-8 text-slate-800 border-r-4 border-indigo-600 pr-4">تسوق حسب القسم</h2>
-        <div className="flex flex-wrap gap-3 mb-12">
+        <div className="flex overflow-x-auto gap-3 mb-12 pb-2 hide-scrollbar scroll-smooth">
           {['الكل', ...categories].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-3 rounded-full font-bold transition-all shadow-soft active:scale-95 ${selectedCategory === category
+              className={`shrink-0 px-6 py-3 rounded-full font-bold transition-all shadow-soft active:scale-95 ${selectedCategory === category
                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-glow'
                 : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'
                 }`}
